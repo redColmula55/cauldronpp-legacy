@@ -1,0 +1,10 @@
+tile.cauldronpp.cauldron.name=Cauldron(Legacy)
+item.cauldronpp.lingering_potion=Lingering %s Potion
+item.cauldronpp.lingering_potion.default_name=Lingering Potion
+item.cauldronpp.potion=%s Potion
+item.cauldronpp.potion.default_name=Potion
+item.cauldronpp.splash_potion=Splash %s Potion
+item.cauldronpp.splash_potion.default_name=Splash Potion
+item.cauldronpp.tipped_arrow=%s Arrow
+item.cauldronpp.tipped_arrow.default_name=Tipped Arrow
+item.cauldronpp.water_bottle=Water Bottle

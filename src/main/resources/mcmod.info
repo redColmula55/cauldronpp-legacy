@@ -1,0 +1,16 @@
+[
+{
+  "modid": "cauldronpp",
+  "name": "Cauldron++",
+  "description": "Cauldron++ port 1.7.10 test.",
+  "version": "${modVersion}",
+  "mcversion": "1.7.10",
+  "url": "",
+  "updateUrl": "",
+  "authorList": ["redColmula55"],
+  "credits": "The Forge and RetroFuturaGradle",
+  "logoFile": "",
+  "screenshots": [],
+  "dependencies": []
+}
+]

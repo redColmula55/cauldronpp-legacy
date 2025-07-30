@@ -1,0 +1,7 @@
+{
+  "required": true,
+  "minVersion": "0.8.5-GTNH",
+  "target": "@env{DEFAULT}",
+  "refmap": "mixins.cauldronpp.refmap.json",
+  "compatibilityLevel": "JAVA_8"
+}
