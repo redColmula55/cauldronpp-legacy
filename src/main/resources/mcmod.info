@@ -2,13 +2,13 @@
 {
   "modid": "cauldronpp",
   "name": "Cauldron++",
-  "description": "Cauldron++ port 1.7.10 test.",
+  "description": "Cauldron++ is a mod which implements b1.9-pre2 brewing system back into modern Minecraft.",
   "version": "${modVersion}",
   "mcversion": "1.7.10",
-  "url": "",
+  "url": "https://github.com/redColmula55/cauldronpp-legacy",
   "updateUrl": "",
   "authorList": ["redColmula55"],
-  "credits": "The Forge and RetroFuturaGradle",
+  "credits": "Credits to RetroFuturaGradle & UniMixins making me able to create this;)",
   "logoFile": "",
   "screenshots": [],
   "dependencies": []
