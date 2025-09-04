@@ -1,18 +1,18 @@
 package rc55.mc.cauldronpp.api;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
-
 import rc55.mc.cauldronpp.item.CauldronppItems;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+@SuppressWarnings("unused")
 public final class CppPotionHelper {
 
     private CppPotionHelper() {}

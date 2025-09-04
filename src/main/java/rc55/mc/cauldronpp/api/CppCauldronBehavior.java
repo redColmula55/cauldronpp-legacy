@@ -1,7 +1,5 @@
 package rc55.mc.cauldronpp.api;
 
-import java.util.Map;
-
 import net.minecraft.block.Block;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Items;
@@ -10,9 +8,10 @@ import net.minecraft.item.ItemArmor;
 import net.minecraft.item.ItemDye;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
-
 import rc55.mc.cauldronpp.item.CauldronppItems;
 import rc55.mc.cauldronpp.tileEntity.CppCauldronTileEntity;
+
+import java.util.Map;
 
 @FunctionalInterface
 public interface CppCauldronBehavior {

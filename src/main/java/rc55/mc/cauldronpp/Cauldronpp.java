@@ -1,8 +1,5 @@
 package rc55.mc.cauldronpp;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import cpw.mods.fml.client.FMLClientHandler;
 import cpw.mods.fml.client.registry.ClientRegistry;
 import cpw.mods.fml.common.Mod;
@@ -10,6 +7,8 @@ import cpw.mods.fml.common.Mod.EventHandler;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import rc55.mc.cauldronpp.block.CauldronppBlocks;
 import rc55.mc.cauldronpp.client.renderer.CppCauldronTileEntityRenderer;
 import rc55.mc.cauldronpp.item.CauldronppItems;
