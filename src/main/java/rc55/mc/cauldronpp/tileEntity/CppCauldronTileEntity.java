@@ -142,14 +142,11 @@ public class CppCauldronTileEntity extends TileEntity {
 
     public void decrease(int amount) {
         this.liquidLevel = Math.max(this.liquidLevel - amount, 0);
-        if (this.isEmpty()) {
-            this.liquidData = 0;
-            this.liquidType = CppCauldronLiquidType.NONE;
-        }
-        this.markDirty();
+        if (this.isEmpty()) this.empty();
     }
 
-    public void reset() {
+    public void empty() {
+        this.potionType = 0;
         this.liquidLevel = 0;
         this.liquidData = 0;
         this.liquidType = CppCauldronLiquidType.NONE;

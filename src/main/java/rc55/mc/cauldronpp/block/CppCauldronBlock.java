@@ -61,7 +61,7 @@ public class CppCauldronBlock extends BlockCauldron implements ITileEntityProvid
     //渲染
     @Override
     public int getRenderType() {
-        return 117;
+        return Block.getIdFromBlock(this);
     }
     @Override
     public boolean renderAsNormalBlock() {

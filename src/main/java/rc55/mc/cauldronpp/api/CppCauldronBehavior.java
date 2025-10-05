@@ -131,8 +131,7 @@ public interface CppCauldronBehavior {
         map.put(Items.water_bucket, bucketBehavior);
 
         //酿造材料
-        for (Item item : CppPotionHelper.getBrewingMaterial()
-            .keySet()) {
+        for (Item item : CppPotionHelper.getBrewingMaterial().keySet()) {
             map.put(item, brewMaterialBehavior);
         }
         for (Item item : CppPotionHelper.brewingMaterialType.keySet()) {
