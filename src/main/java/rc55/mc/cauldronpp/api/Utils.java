@@ -1,15 +1,15 @@
 package rc55.mc.cauldronpp.api;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.function.Consumer;
-
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Consumer;
 
 public final class Utils {
 

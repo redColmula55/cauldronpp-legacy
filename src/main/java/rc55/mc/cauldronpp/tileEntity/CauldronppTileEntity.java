@@ -1,10 +1,9 @@
 package rc55.mc.cauldronpp.tileEntity;
 
-import net.minecraft.tileentity.TileEntity;
-
 import cpw.mods.fml.client.registry.ISimpleBlockRenderingHandler;
 import cpw.mods.fml.client.registry.RenderingRegistry;
 import cpw.mods.fml.common.registry.GameRegistry;
+import net.minecraft.tileentity.TileEntity;
 import rc55.mc.cauldronpp.Cauldronpp;
 import rc55.mc.cauldronpp.client.renderer.CppCauldronRenderHandler;
 

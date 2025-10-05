@@ -1,7 +1,7 @@
 package rc55.mc.cauldronpp.block;
 
-import java.util.Random;
-
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockCauldron;
 import net.minecraft.block.ITileEntityProvider;
@@ -14,14 +14,13 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.DamageSource;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
-
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
 import rc55.mc.cauldronpp.Cauldronpp;
 import rc55.mc.cauldronpp.api.CppCauldronBehavior;
 import rc55.mc.cauldronpp.api.CppCauldronLiquidType;
 import rc55.mc.cauldronpp.api.Utils;
 import rc55.mc.cauldronpp.tileEntity.CppCauldronTileEntity;
+
+import java.util.Random;
 
 public class CppCauldronBlock extends BlockCauldron implements ITileEntityProvider {
 

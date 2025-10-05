@@ -1,5 +1,6 @@
 package rc55.mc.cauldronpp.client.renderer;
 
+import cpw.mods.fml.client.registry.ISimpleBlockRenderingHandler;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockCauldron;
 import net.minecraft.client.renderer.EntityRenderer;
@@ -8,10 +9,7 @@ import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.IIcon;
 import net.minecraft.world.IBlockAccess;
-
 import org.lwjgl.opengl.GL11;
-
-import cpw.mods.fml.client.registry.ISimpleBlockRenderingHandler;
 import rc55.mc.cauldronpp.Cauldronpp;
 import rc55.mc.cauldronpp.block.CauldronppBlocks;
 import rc55.mc.cauldronpp.block.CppCauldronBlock;

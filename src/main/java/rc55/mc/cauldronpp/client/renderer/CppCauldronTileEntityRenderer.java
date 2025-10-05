@@ -4,9 +4,7 @@ import net.minecraft.block.Block;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
 import net.minecraft.tileentity.TileEntity;
-
 import org.lwjgl.opengl.GL11;
-
 import rc55.mc.cauldronpp.block.CauldronppBlocks;
 import rc55.mc.cauldronpp.tileEntity.CppCauldronTileEntity;
 

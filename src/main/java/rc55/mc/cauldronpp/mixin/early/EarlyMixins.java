@@ -1,17 +1,17 @@
 package rc55.mc.cauldronpp.mixin.early;
 
-import java.util.*;
-
 import com.gtnewhorizon.gtnhmixins.IEarlyMixinLoader;
-
 import com.gtnewhorizon.gtnhmixins.builders.IMixins;
 import cpw.mods.fml.common.DummyModContainer;
 import cpw.mods.fml.common.ModMetadata;
 import cpw.mods.fml.relauncher.IFMLLoadingPlugin;
 import rc55.mc.cauldronpp.Cauldronpp;
 import rc55.mc.cauldronpp.Tags;
-import rc55.mc.cauldronpp.api.Utils;
 import rc55.mc.cauldronpp.mixin.Mixins;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 @IFMLLoadingPlugin.MCVersion("1.7.10")
 public class EarlyMixins extends DummyModContainer implements IEarlyMixinLoader, IFMLLoadingPlugin {

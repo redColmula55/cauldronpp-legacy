@@ -1,14 +1,13 @@
 package rc55.mc.cauldronpp.api;
 
-import javax.annotation.Nullable;
-
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.util.ResourceLocation;
-
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
 import rc55.mc.cauldronpp.Cauldronpp;
+
+import javax.annotation.Nullable;
 
 public enum CppCauldronLiquidType {
 

@@ -1,13 +1,12 @@
 package rc55.mc.cauldronpp.tileEntity;
 
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.Packet;
 import net.minecraft.network.play.server.S35PacketUpdateTileEntity;
 import net.minecraft.tileentity.TileEntity;
-
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
 import rc55.mc.cauldronpp.api.CppCauldronBehavior;
 import rc55.mc.cauldronpp.api.CppCauldronLiquidType;
 import rc55.mc.cauldronpp.api.CppPotionHelper;
@@ -125,7 +124,7 @@ public class CppCauldronTileEntity extends TileEntity {
     }
 
     public boolean isEmpty() {
-        return this.liquidLevel == 0 || this.liquidType == CppCauldronLiquidType.NONE;
+        return this.liquidLevel <= 0 || this.liquidType == CppCauldronLiquidType.NONE;
     }
 
     public boolean canIncrease(int amount) {
@@ -137,16 +136,23 @@ public class CppCauldronTileEntity extends TileEntity {
     }
 
     public void increase(int amount) {
-        this.liquidLevel += amount;
+        this.liquidLevel = Math.min(this.liquidLevel + amount, CppCauldronBehavior.MAX_AMOUNT);
         this.markDirty();
     }
 
     public void decrease(int amount) {
-        this.liquidLevel -= amount;
+        this.liquidLevel = Math.max(this.liquidLevel - amount, 0);
         if (this.isEmpty()) {
             this.liquidData = 0;
             this.liquidType = CppCauldronLiquidType.NONE;
         }
+        this.markDirty();
+    }
+
+    public void reset() {
+        this.liquidLevel = 0;
+        this.liquidData = 0;
+        this.liquidType = CppCauldronLiquidType.NONE;
         this.markDirty();
     }
 }

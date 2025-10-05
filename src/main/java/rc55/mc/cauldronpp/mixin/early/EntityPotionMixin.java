@@ -1,7 +1,5 @@
 package rc55.mc.cauldronpp.mixin.early;
 
-import java.util.List;
-
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.projectile.EntityPotion;
 import net.minecraft.item.ItemStack;
@@ -9,16 +7,16 @@ import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.MovingObjectPosition;
-
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-
 import rc55.mc.cauldronpp.api.CppPotionHelper;
 import rc55.mc.cauldronpp.api.Utils;
 import rc55.mc.cauldronpp.item.CauldronppItems;
+
+import java.util.List;
 
 @Mixin(EntityPotion.class)
 public abstract class EntityPotionMixin {
