@@ -7,18 +7,21 @@ import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
 import rc55.mc.cauldronpp.item.CauldronppItems;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
+//特别鸣谢 wwwweeeeee团队及retromcp项目 解析b1.9-pre2酿造逻辑
+//special thanks to wwwweeeeee team and the retromcp project
 @SuppressWarnings("unused")
 public final class CppPotionHelper {
 
     private CppPotionHelper() {}
 
     //酿造材料（地狱疣单独计算）
-    private static Map<Item, String> brewingMaterial = new HashMap<>();
+    public final static Map<Item, String> brewingMaterial = new HashMap<>();
+    // 出现特定效果需要满足的条件
+    private final static Map<Potion, String> potionRequirements = new HashMap<>();
+    // 提升效果等级的条件
+    private final static Map<Potion, String> potionAmplifiers = new HashMap<>();
 
     public static Map<Item, String> getBrewingMaterial() {
         return brewingMaterial;
@@ -42,10 +45,7 @@ public final class CppPotionHelper {
         map.put(Items.gunpowder, SPLASH_TYPE);
     });
 
-    //特别鸣谢 wwwweeeeee团队及retromcp项目 解析b1.9-pre2酿造逻辑
-    //special thanks to wwwweeeeee team and the retromcp project
-    private static Map<Potion, String> potionRequirements = new HashMap<>();// 出现特定效果需要满足的条件
-    private static Map<Potion, String> potionAmplifiers = new HashMap<>();// 提升效果等级的条件
+
 
     public static Map<Potion, String> getPotionRequirements() {
         return potionRequirements;
@@ -68,7 +68,8 @@ public final class CppPotionHelper {
     }
 
     //二进制数相关计算
-    private static int getNumberInBinary(int index, int i1, int i2, int i3, int i4, int i5) {// 返回二进制数index的i1~i5位组成的二进制数
+    // 返回二进制数index的i1~i5位组成的二进制数
+    private static int getNumberInBinary(int index, int i1, int i2, int i3, int i4, int i5) {
         return (checkFlag(index, i1) ? 16 : 0) | (checkFlag(index, i2) ? 8 : 0)
             | (checkFlag(index, i3) ? 4 : 0)
             | (checkFlag(index, i4) ? 2 : 0)
@@ -125,32 +126,28 @@ public final class CppPotionHelper {
     private static int applyNetherWart1(int i0) {
         if ((i0 & 1) == 0) {
             return i0;
-        } else {
-            int i1;
-            for (i1 = 14; (i0 & 1 << i1) == 0 && i1 >= 0; --i1) {//i0有多少位
-            }
-
-            if (i1 >= 2 && (i0 & 1 << i1 - 1) == 0) {
-                if (i1 >= 0) {
-                    i0 &= ~(1 << i1);
-                }
-
-                i0 <<= 1;
-                if (i1 >= 0) {
-                    i0 |= 1 << i1;
-                    i0 |= 1 << i1 - 1;
-                }
-
-                return i0 & 32767;
-            } else {
-                return i0;
-            }
         }
+
+        int i1;
+        //i0有多少位
+        for (i1 = 14; (i0 & 1 << i1) == 0 && i1 >= 0; --i1);
+
+        if (i1 < 2 || (i0 & 1 << i1 - 1) != 0) {
+            return i0;
+        }
+
+        i0 &= ~(1 << i1);
+
+        i0 <<= 1;
+        i0 |= 1 << i1;
+        i0 |= 1 << i1 - 1;
+
+        return i0 & 32767;
     }
 
     private static int applyNetherWart(int i0) {
         int i1;
-        for (i1 = 14; (i0 & 1 << i1) == 0 && i1 >= 0; --i1) {}
+        for (i1 = 14; (i0 & 1 << i1) == 0 && i1 >= 0; --i1);
 
         if (i1 >= 0) {
             i0 &= ~(1 << i1);
@@ -189,136 +186,128 @@ public final class CppPotionHelper {
 
     //效果等级&持续时间 不符合要求返回0
     private static int getEffectMultiplier(String requirement, int startPos, int endPos, int potionData) {
-        if (startPos < requirement.length() && endPos >= 0 && startPos < endPos) {
-            int i4 = requirement.indexOf(124, startPos);// | ascii 124 符号|所在位置
-            int i5;
-            if (i4 >= 0 && i4 < endPos) {//具有 “|” (或) 运算符
-                int front = getEffectMultiplier(requirement, startPos, i4 - 1, potionData);// 前半
-                if (front > 0) {
-                    return front;
-                } else {
-                    int back = getEffectMultiplier(requirement, i4 + 1, endPos, potionData);// 后半
-                    return Math.max(back, 0);
-                }
-            } else {
-                i5 = requirement.indexOf(38, startPos);// & ascii 38 符号&所在位置
-                if (i5 >= 0 && i5 < endPos) {//具有 “&” (与) 运算符
-                    int front = getEffectMultiplier(requirement, startPos, i5 - 1, potionData);
-                    if (front <= 0) {
-                        return 0;
-                    } else {
-                        int back = getEffectMultiplier(requirement, i5 + 1, endPos, potionData);
-                        return back <= 0 ? 0 : (Math.max(front, back));
-                    }
-                } else {
-                    boolean z6 = false;
-                    boolean z7 = false;
-                    boolean needsValueUpdate = false;
-                    boolean z9 = false;
-                    boolean z10 = false;
-                    byte operation = -1;//模式 未指定为-1 =为0 >为1 <为2
-                    int flag = 0;
-                    int i13 = 0;
-                    int i14 = 0;
-
-                    for (int i15 = startPos; i15 < endPos; ++i15) {//遍历要求
-                        char thisChar = requirement.charAt(i15);//当前位置
-                        if (thisChar >= 48 && thisChar <= 57) {//数字0~9
-                            if (z6) {//乘数
-                                i13 = thisChar - 48;
-                                z7 = true;
-                            } else {//位数
-                                flag *= 10;
-                                flag += thisChar - 48;
-                                //计算后更新计算用属性
-                                //以符号分隔为一组（e.g. 在+1-15<13中，有+1 -15 <13 3组）
-                                //检测到第二组才更新第一组
-                                //遍历完成后更新最后一组
-                                needsValueUpdate = true;
-                            }
-                        } else if (thisChar == 42) {// * ascii 42
-                            z6 = true;
-                        } else if (thisChar == 33) {// ! ascii 33
-                            if (needsValueUpdate) {
-                                i14 += updateEffectWeigh(z9, z7, z10, operation, flag, i13, potionData);
-                                z9 = false;
-                                z10 = false;
-                                z6 = false;
-                                z7 = false;
-                                needsValueUpdate = false;
-                                i13 = 0;
-                                flag = 0;
-                                operation = -1;
-                            }
-
-                            z9 = true;
-                        } else if (thisChar == 45) {// - ascii 45
-                            if (needsValueUpdate) {
-                                i14 += updateEffectWeigh(z9, z7, z10, operation, flag, i13, potionData);
-                                z9 = false;
-                                z10 = false;
-                                z6 = false;
-                                z7 = false;
-                                needsValueUpdate = false;
-                                i13 = 0;
-                                flag = 0;
-                                operation = -1;
-                            }
-
-                            z10 = true;
-                        } else if (thisChar != 61 && thisChar != 60 && thisChar != 62) { // ascii 60< 61= 62>
-                            if (thisChar == 43 && needsValueUpdate) {// + ascii 43
-                                i14 += updateEffectWeigh(z9, z7, z10, operation, flag, i13, potionData);
-                                z9 = false;
-                                z10 = false;
-                                z6 = false;
-                                z7 = false;
-                                needsValueUpdate = false;
-                                i13 = 0;
-                                flag = 0;
-                                operation = -1;
-                            }
-                        } else {
-                            if (needsValueUpdate) {
-                                i14 += updateEffectWeigh(z9, z7, z10, operation, flag, i13, potionData);
-                                z9 = false;
-                                z10 = false;
-                                z6 = false;
-                                z7 = false;
-                                needsValueUpdate = false;
-                                i13 = 0;
-                                flag = 0;
-                                operation = -1;
-                            }
-                            //设置操作
-                            if (thisChar == 61) {// = ascii 61
-                                operation = 0;
-                            } else if (thisChar == 60) {// < ascii 60
-                                operation = 2;
-                            } else if (thisChar == 62) {// > ascii 62
-                                operation = 1;
-                            }
-                        }
-                    }
-
-                    if (needsValueUpdate) {//更新最后一组属性
-                        i14 += updateEffectWeigh(z9, z7, z10, operation, flag, i13, potionData);
-                    }
-
-                    return i14;
-                }
-            }
-        } else {
-            return 0;//没有效果或者不提升等级
+        if (startPos >= requirement.length() || endPos < 0 || startPos >= endPos) {
+            //没有效果或者不提升等级
+            return 0;
         }
+
+        // | ascii 124 符号|所在位置
+        int i4 = requirement.indexOf(124, startPos);
+        int i5;
+        //具有 “|” (或) 运算符
+        if (i4 >= 0 && i4 < endPos) {
+            // 前半
+            int front = getEffectMultiplier(requirement, startPos, i4 - 1, potionData);
+            if (front > 0) {
+                return front;
+            }
+
+            // 后半
+            int back = getEffectMultiplier(requirement, i4 + 1, endPos, potionData);
+            return Math.max(back, 0);
+        }
+
+        // & ascii 38 符号&所在位置
+        i5 = requirement.indexOf(38, startPos);
+
+        //具有 “&” (与) 运算符
+        if (i5 >= 0 && i5 < endPos) {
+            int front = getEffectMultiplier(requirement, startPos, i5 - 1, potionData);
+            if (front <= 0) {
+                return 0;
+            }
+
+            int back = getEffectMultiplier(requirement, i5 + 1, endPos, potionData);
+            return back <= 0 ? 0 : (Math.max(front, back));
+        }
+
+        boolean z6 = false;
+        boolean z7 = false;
+        boolean needsValueUpdate = false;
+        boolean z9 = false;
+        boolean z10 = false;
+
+        //模式 未指定为-1 =为0 >为1 <为2
+        byte operation = -1;
+        int flag = 0;
+        int i13 = 0;
+        int i14 = 0;
+
+        //遍历要求
+        for (int i15 = startPos; i15 < endPos; ++i15) {
+            //当前位置
+            char thisChar = requirement.charAt(i15);
+
+            //数字0~9
+            if (thisChar >= 48 && thisChar <= 57) {
+                //乘数
+                if (z6) {
+                    i13 = thisChar - 48;
+                    z7 = true;
+                    continue;
+                }
+
+                //位数
+                flag *= 10;
+                flag += thisChar - 48;
+                //计算后更新计算用属性
+                //以符号分隔为一组（e.g. 在+1-15<13中，有+1 -15 <13 3组）
+                //检测到第二组才更新第一组
+                //遍历完成后更新最后一组
+                needsValueUpdate = true;
+                continue;
+            }
+
+            if (thisChar == 42) {// * ascii 42
+                z6 = true;
+                continue;
+            }
+
+            switch ((byte) thisChar) {
+                case 33:
+                    z9 = true;
+                    break;
+                case 45:
+                    z10 = true;
+                    break;
+                case 61:
+                    operation = 0;
+                    break;
+                case 62:
+                    operation = 1;
+                    break;
+                case 63:
+                    operation = 2;
+                    break;
+            }
+
+            if (!needsValueUpdate) {
+                break;
+            }
+            i14 += updateEffectWeigh(z9, z7, z10, operation, flag, i13, potionData);
+            z9 = false;
+            z10 = false;
+            z6 = false;
+            z7 = false;
+            needsValueUpdate = false;
+            i13 = 0;
+            flag = 0;
+        }
+
+        if (needsValueUpdate) {//更新最后一组属性
+            i14 += updateEffectWeigh(z9, z7, z10, operation, flag, i13, potionData);
+        }
+
+        return i14;
     }
 
-    private static int updateEffectWeigh(boolean z0, boolean z1, boolean z2, int operation, int flagCount, int i5,
+    private static int updateEffectWeigh(boolean flagNon, boolean flagMul, boolean flagI, int operation, int flagCount, int i5,
         int potionData) {
+        // Fixme - 为什么这里的 i7 赋值后下方（324）行重新赋值？
         int i7 = 0;
-        if (z0) {// !
+        if (flagNon) {
             i7 = isFlagNotSet(potionData, flagCount);
-        } else if (operation != -1) {//判断模式 未指定为-1 =为0 >为1 <为2
+        } else if (operation != -1) {           //判断模式 未指定为-1 =为0 >为1 <为2
             if (operation == 0 && countFlags(potionData) == flagCount) {
                 i7 = 1;
             } else if (operation == 1 && countFlags(potionData) > flagCount) {
@@ -326,15 +315,15 @@ public final class CppPotionHelper {
             } else if (operation == 2 && countFlags(potionData) < flagCount) {
                 i7 = 1;
             }
-        } else {
-            i7 = isFlagSet(potionData, flagCount);
         }
 
-        if (z1) {// *
+        i7 = isFlagSet(potionData, flagCount);
+
+        if (flagMul) {
             i7 *= i5;
         }
 
-        if (z2) {// -
+        if (flagI) {
             i7 *= -1;
         }
 
@@ -350,38 +339,31 @@ public final class CppPotionHelper {
         boolean z6 = false;
         int i7 = 0;
 
-        for (int i8 = b2; i8 < i3; ++i8) {//遍历
+        //遍历
+        for (int i8 = b2; i8 < i3; ++i8) {
             char thisChar = materialProperty.charAt(i8);
             if (thisChar >= 48 && thisChar <= 57) {//数字 0~9
                 i7 *= 10;
                 i7 += thisChar - 48;
                 z4 = true;
-            } else if (thisChar == 33) {// ! ascii 33
-                if (z4) {
+                continue;
+            }
+
+            if (!z4) {
+                continue;
+            }
+
+
+            // Fixme - 冗余写法
+            switch ((byte) thisChar) {
+                case 33:
+                case 45:
+                case 43:
                     potionData = updatePotionData(potionData, i7, z6, z5);
                     z5 = false;
                     z6 = false;
                     z4 = false;
                     i7 = 0;
-                }
-
-                z5 = true;
-            } else if (thisChar == 45) {// - ascii 45
-                if (z4) {
-                    potionData = updatePotionData(potionData, i7, z6, z5);
-                    z5 = false;
-                    z6 = false;
-                    z4 = false;
-                    i7 = 0;
-                }
-
-                z6 = true;
-            } else if (thisChar == 43 && z4) {// + ascii 43
-                potionData = updatePotionData(potionData, i7, z6, z5);
-                z5 = false;
-                z6 = false;
-                z4 = false;
-                i7 = 0;
             }
         }
 
@@ -393,52 +375,59 @@ public final class CppPotionHelper {
     }
 
     private static int updatePotionData(int potionData, int flag, boolean z2, boolean z3) {
-        if (z2) {//设置为0
-            potionData &= ~(1 << flag);
-        } else if (z3) {//反转
-            if ((potionData & 1 << flag) != 0) {//原为1,设为0
-                potionData &= ~(1 << flag);
-            } else {//原为0,设为1
-                potionData |= 1 << flag;
-            }
-        } else {//设置为1
-            potionData |= 1 << flag;
+        //设置为0
+        if (z2) {
+            return potionData & ~(1 << flag);
         }
 
-        return potionData;
+        //反转
+        if (!z3 && (potionData & (1 << flag)) == 0) {
+            return potionData | (1 << flag);
+        }
+        //原为1,设为0
+        return potionData & ~(1 << flag);
     }
 
     //获取对应药水的所有效果
     public static List<PotionEffect> getEffects(int potionData) {
         ArrayList<PotionEffect> effects = new ArrayList<>();
         for (Potion effect : Potion.potionTypes) {
-            if (effect != null) {
-                String effectRequirement = potionRequirements.get(effect);
-                if (effectRequirement != null) {
-                    int duration = getEffectMultiplier(effectRequirement, 0, effectRequirement.length(), potionData);
-                    if (duration > 0) {
-                        int amplifier = 0;
-                        String amplifierRequirement = potionAmplifiers.get(effect);
-                        if (amplifierRequirement != null) {
-                            amplifier = getEffectMultiplier(amplifierRequirement, 0, amplifierRequirement.length(), potionData);
-                            if (amplifier < 0) {
-                                amplifier = 0;
-                            }
-                        }
-
-                        if (effect.isInstant()) {
-                            duration = 1;
-                        } else {
-                            duration = 1200 * (duration * 3 + (duration - 1) * 2);
-                            if (effect.isBadEffect()) {//减少有害效果时常
-                                duration >>= 1;
-                            }
-                        }
-
-                        effects.add(new PotionEffect(effect.getId(), duration, amplifier));
-                    }
-                }
+            if (Objects.isNull(effect)) {
+                continue;
             }
+
+            String effectRequirement = potionRequirements.get(effect);
+            if (Objects.isNull(effectRequirement)) {
+                continue;
+            }
+
+            int duration = getEffectMultiplier(effectRequirement, 0, effectRequirement.length(), potionData);
+            if (duration <= 0) {
+                continue;
+            }
+
+            int amplifier = 0;
+            String amplifierRequirement = potionAmplifiers.get(effect);
+            if (Objects.nonNull(amplifierRequirement)) {
+                amplifier = getEffectMultiplier(amplifierRequirement, 0,
+                    amplifierRequirement.length(), potionData);
+
+                amplifier = Math.max(0, amplifier);
+            }
+
+            if (effect.isInstant()) {
+                duration = 1;
+                effects.add(new PotionEffect(effect.getId(), duration, amplifier));
+                continue;
+            }
+
+            duration = 1200 * (duration * 3 + (duration - 1) * 2);
+            //减少有害效果时常
+            if (effect.isBadEffect()) {
+                duration >>= 1;
+            }
+
+            effects.add(new PotionEffect(effect.getId(), duration, amplifier));
         }
 
         return effects;

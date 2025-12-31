@@ -13,6 +13,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import rc55.mc.cauldronpp.api.Utils;
 import rc55.mc.cauldronpp.item.CauldronppItems;
 
+import java.util.Objects;
+
 @Mixin(ItemGlassBottle.class)
 public abstract class ItemGlassBottleMixin {
     //玻璃瓶右键装水
@@ -21,21 +23,29 @@ public abstract class ItemGlassBottleMixin {
         CallbackInfoReturnable<ItemStack> cir) {
         ItemGlassBottle self = (ItemGlassBottle)(Object)this;
         MovingObjectPosition pos = ((ItemAccessor)self).accessMovingObjectPositionFromPlayer(world, player, true);
-        if (pos != null && pos.typeOfHit == MovingObjectPosition.MovingObjectType.BLOCK) {
-            int x = pos.blockX;
-            int y = pos.blockY;
-            int z = pos.blockZ;
-            if (world.canMineBlock(player, x, y, z) && player.canPlayerEdit(x, y, z, pos.sideHit, stack)) {
-                if (world.getBlock(x, y, z).getMaterial() == Material.water) {
-                    stack.stackSize--;
-                    if (stack.stackSize <= 0) {
-                        cir.setReturnValue(new ItemStack(CauldronppItems.WATER_BOTTLE));
-                    } else {
-                        Utils.addStackToPlayerInv(world, player, new ItemStack(CauldronppItems.WATER_BOTTLE));
-                        cir.setReturnValue(stack);
-                    }
-                }
-            }
+        if (Objects.isNull(pos) || pos.typeOfHit != MovingObjectPosition.MovingObjectType.BLOCK) {
+            return;
         }
+
+        int x = pos.blockX;
+        int y = pos.blockY;
+        int z = pos.blockZ;
+        if (!world.canMineBlock(player, x, y, z)
+            || !player.canPlayerEdit(x, y, z, pos.sideHit, stack)) {
+            return;
+        }
+
+        if (world.getBlock(x, y, z).getMaterial() != Material.water) {
+            return;
+        }
+
+        stack.stackSize--;
+        if (stack.stackSize <= 0) {
+            cir.setReturnValue(new ItemStack(CauldronppItems.WATER_BOTTLE));
+            return;
+        }
+
+        Utils.addStackToPlayerInv(world, player, new ItemStack(CauldronppItems.WATER_BOTTLE));
+        cir.setReturnValue(stack);
     }
 }

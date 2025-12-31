@@ -24,22 +24,47 @@ public interface CppCauldronBehavior {
     int BUCKET_AMOUNT = 3;//桶
     int MAX_AMOUNT = 3;//最大容量
 
-    CppCauldronBehavior brewMaterialBehavior = (world, x, y, z, meta, cauldron, player, stack) -> {
-        if (!cauldron.canBrew()) return false;
+    CppCauldronBehavior brewMaterialBehavior = (world, x, y, z, meta,
+                                                cauldron,
+                                                player,
+                                                stack) -> {
+        if (!cauldron.canBrew()) {
+            return false;
+        }
+
         int newData;
-        if (stack.getItem() == Items.nether_wart) {//地狱疣
+
+        // 地狱疣 -> 药水类型材料 -> 酿造材料
+        if (stack.getItem() == Items.nether_wart) {
             newData = CppPotionHelper.applyMaterialNetherWart(cauldron.getLiquidData());
-            if (newData == cauldron.getLiquidData()) return false;
+            if (newData  == cauldron.getLiquidData()) {
+                return false;
+            }
+
             cauldron.setLiquidData(newData);
-        } else if (CppPotionHelper.brewingMaterialType.containsKey(stack.getItem())) {//药水类型材料
+        } else if (CppPotionHelper.brewingMaterialType.containsKey(stack.getItem())) {
             newData = CppPotionHelper.brewingMaterialType.get(stack.getItem());
-            if (newData == cauldron.getPotionType()) return false;
+            if (newData == cauldron.getPotionType()) {
+                return false;
+            }
+
             cauldron.setPotionType((byte) newData);
-        } else if (CppPotionHelper.getBrewingMaterial().containsKey(stack.getItem())) {//酿造材料
-                if (!cauldron.applyMaterial(CppPotionHelper.getMaterialProperty(stack.getItem()))) return false;
-        } else return false;
-        if (cauldron.isWater()) cauldron.setLiquidType(CppCauldronLiquidType.POTION);
-        if (!player.capabilities.isCreativeMode) stack.stackSize--;
+        } else if (CppPotionHelper.getBrewingMaterial().containsKey(stack.getItem())) {
+            if (!cauldron.applyMaterial(CppPotionHelper.getMaterialProperty(stack.getItem()))) {
+                return false;
+            }
+        } else {
+            return false;
+        }
+
+        if (cauldron.isWater()) {
+            cauldron.setLiquidType(CppCauldronLiquidType.POTION);
+        }
+
+        if (!player.capabilities.isCreativeMode) {
+            stack.stackSize--;
+        }
+
         update(world, x, y, z, meta, cauldron);
         return true;
     };

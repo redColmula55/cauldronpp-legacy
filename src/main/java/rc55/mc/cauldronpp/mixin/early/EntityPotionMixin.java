@@ -17,6 +17,7 @@ import rc55.mc.cauldronpp.api.Utils;
 import rc55.mc.cauldronpp.item.CauldronppItems;
 
 import java.util.List;
+import java.util.Objects;
 
 @Mixin(EntityPotion.class)
 public abstract class EntityPotionMixin {
@@ -27,46 +28,53 @@ public abstract class EntityPotionMixin {
     @Inject(at = @At("HEAD"), method = "onImpact", cancellable = true)
     public void onImpact(MovingObjectPosition pos, CallbackInfo ci) {
         EntityPotion self = (EntityPotion)(Object)this;
-        if (Utils.getItemFromStack(this.potionDamage) == CauldronppItems.CPP_SPLASH_POTION && !self.worldObj.isRemote) {
-            List<PotionEffect> list = CppPotionHelper.getEffects(self.getPotionDamage());
+        if (Utils.getItemFromStack(this.potionDamage) != CauldronppItems.CPP_SPLASH_POTION || self.worldObj.isRemote) {
+            return;
+        }
 
-            if (list != null && !list.isEmpty()) {
-                AxisAlignedBB axisalignedbb = self.boundingBox.expand(4.0D, 2.0D, 4.0D);
-                List<EntityLivingBase> list1 = self.worldObj.getEntitiesWithinAABB(EntityLivingBase.class, axisalignedbb);
+        self.worldObj.playAuxSFX(2002, (int) Math.round(self.posX), (int) Math.round(self.posY), (int) Math.round(self.posZ), self.getPotionDamage());
+        self.setDead();
+        ci.cancel();
 
-                if (list1 != null && !list1.isEmpty()) {
-                    for (EntityLivingBase entity : list1) {
-                        double d0 = self.getDistanceSqToEntity(entity);
+        List<PotionEffect> list = CppPotionHelper.getEffects(self.getPotionDamage());
 
-                        if (d0 < 16.0D) {
-                            double d1 = 1.0D - Math.sqrt(d0) / 4.0D;
+        if (Objects.isNull(list) || list.isEmpty()) {
+            return;
+        }
 
-                            if (entity == pos.entityHit) {
-                                d1 = 1.0D;
-                            }
+        AxisAlignedBB axisalignedbb = self.boundingBox.expand(4.0D, 2.0D, 4.0D);
+        List<EntityLivingBase> list1 = self.worldObj.getEntitiesWithinAABB(EntityLivingBase.class, axisalignedbb);
 
-                            for (PotionEffect potioneffect : list) {
-                                int i = potioneffect.getPotionID();
+        if (Objects.isNull(list1) || list1.isEmpty()) {
+            return;
+        }
 
-                                if (Potion.potionTypes[i].isInstant()) {
-                                    Potion.potionTypes[i].affectEntity(self.getThrower(), entity, potioneffect.getAmplifier(), d1);
-                                } else {
-                                    int j = (int) (d1 * (double) potioneffect.getDuration() + 0.5D);
+        for (EntityLivingBase entity : list1) {
+            double d0 = self.getDistanceSqToEntity(entity);
 
-                                    if (j > 20) {
-                                        entity.addPotionEffect(new PotionEffect(i, j, potioneffect.getAmplifier()));
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
+            if (d0 >= 16.0D) {
+                continue;
             }
 
-            self.worldObj.playAuxSFX(2002, (int) Math.round(self.posX), (int) Math.round(self.posY), (int) Math.round(self.posZ), self.getPotionDamage());
-            self.setDead();
+            double d1 = 1.0D - Math.sqrt(d0) / 4.0D;
 
-            ci.cancel();
+            if (entity == pos.entityHit) {
+                d1 = 1.0D;
+            }
+
+            for (PotionEffect potioneffect : list) {
+                int i = potioneffect.getPotionID();
+
+                if (Potion.potionTypes[i].isInstant()) {
+                    Potion.potionTypes[i].affectEntity(self.getThrower(), entity, potioneffect.getAmplifier(), d1);
+                    continue;
+                }
+
+                int j = (int) (d1 * (double) potioneffect.getDuration() + 0.5D);
+                if (j > 20) {
+                    entity.addPotionEffect(new PotionEffect(i, j, potioneffect.getAmplifier()));
+                }
+            }
         }
     }
 }
