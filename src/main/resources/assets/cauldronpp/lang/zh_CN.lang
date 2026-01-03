@@ -1,10 +1,10 @@
 tile.cauldronpp.cauldron.name=炼药锅(旧版)
 item.cauldronpp.lingering_potion=滞留型%s药水
-item.cauldronpp.lingering_potion.default_name=滞留型药水
 item.cauldronpp.potion=%s药水
-item.cauldronpp.potion.default_name=药水
+item.cauldronpp.potion.description.when_use=当使用时：
 item.cauldronpp.splash_potion=喷溅型%s药水
-item.cauldronpp.splash_potion.default_name=喷溅型药水
 item.cauldronpp.tipped_arrow=%s药箭
-item.cauldronpp.tipped_arrow.default_name=药箭
 item.cauldronpp.water_bottle=水瓶
+
+item.cauldronpp.lingering_potion_fertilizer=滞留药水催化剂
+item.cauldronpp.lingering_potion_fertilizer.desc=仅用于制作滞留药水

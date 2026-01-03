@@ -15,9 +15,11 @@ public final class Utils {
 
     private Utils() {}
 
-    public static <M> M make(M map, Consumer<M> consumer) {
-        consumer.accept(map);
-        return map;
+    public static final ItemStack EMPTY_STACK = new ItemStack(Item.getItemById(0));
+
+    public static <T> T make(T t, Consumer<T> consumer) {
+        consumer.accept(t);
+        return t;
     }
 
     public static <K, V> Map<K, V> makeMap(Consumer<Map<K, V>> consumer) {

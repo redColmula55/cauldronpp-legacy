@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+@SuppressWarnings("unused")
 @IFMLLoadingPlugin.MCVersion("1.7.10")
 public class EarlyMixins extends DummyModContainer implements IEarlyMixinLoader, IFMLLoadingPlugin {
 
@@ -33,11 +34,6 @@ public class EarlyMixins extends DummyModContainer implements IEarlyMixinLoader,
     @Override
     public List<String> getMixins(Set<String> loadedCoreMods) {
         return IMixins.getEarlyMixins(Mixins.class, loadedCoreMods);
-//        return !loadedCoreMods.contains("") ? Utils.make(new ArrayList<>(), list -> {
-//             list.add("ItemAccessor");
-//             list.add("ItemGlassBottleMixin");
-//             list.add("EntityPotionMixin");
-//        }) : Collections.emptyList();
     }
 
     @Override

@@ -1,11 +1,11 @@
-package rc55.mc.cauldronpp.client.renderer;
+package rc55.mc.cauldronpp.client.renderer.tileEntity;
 
 import net.minecraft.block.Block;
-import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
 import net.minecraft.tileentity.TileEntity;
 import org.lwjgl.opengl.GL11;
 import rc55.mc.cauldronpp.block.CauldronppBlocks;
+import rc55.mc.cauldronpp.client.renderer.model.ModelCppCauldronLiquid;
 import rc55.mc.cauldronpp.tileEntity.CppCauldronTileEntity;
 
 public class CppCauldronTileEntityRenderer extends TileEntitySpecialRenderer {
@@ -14,16 +14,16 @@ public class CppCauldronTileEntityRenderer extends TileEntitySpecialRenderer {
 
     @Override
     public void renderTileEntityAt(TileEntity tileEntity, double x, double y, double z, float f1) {
-        if (tileEntity instanceof CppCauldronTileEntity) this.renderTileEntityAt(((CppCauldronTileEntity) tileEntity), x, y, z, f1);
+        if (tileEntity instanceof CppCauldronTileEntity)
+            this.render(((CppCauldronTileEntity) tileEntity), x, y, z);
     }
 
-    private void renderTileEntityAt(CppCauldronTileEntity cauldron, double x, double y, double z, float f1) {
+    private void render(CppCauldronTileEntity cauldron, double x, double y, double z) {
         Block block = cauldron.getBlockType();
         if (!cauldron.isEmpty() && block == CauldronppBlocks.CAULDRON) {
 
             this.bindTexture(cauldron.getLiquidType().getTexture());
 
-            Tessellator tessellator = Tessellator.instance;
             GL11.glPushMatrix();
             GL11.glDepthMask(false);
 
@@ -37,7 +37,7 @@ public class CppCauldronTileEntityRenderer extends TileEntitySpecialRenderer {
 
             float f = 0.6666667F;
             GL11.glTranslatef((float) x + 0.5F, (float) (y + cauldron.getRenderFluidHeight()), (float) z + 0.5F);
-            GL11.glScalef(-f, -f, -f * 2);
+            GL11.glScalef(f, f, f * 2);
 
             LIQUID_MODEL.render();
 

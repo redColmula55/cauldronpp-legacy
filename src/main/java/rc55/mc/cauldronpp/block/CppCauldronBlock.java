@@ -1,5 +1,7 @@
 package rc55.mc.cauldronpp.block;
 
+import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.block.Block;
@@ -24,6 +26,8 @@ import java.util.Random;
 
 public class CppCauldronBlock extends BlockCauldron implements ITileEntityProvider {
 
+    private final Supplier<Integer> renderId;
+
     public CppCauldronBlock() {
         super();
         this.isBlockContainer = true;
@@ -32,6 +36,7 @@ public class CppCauldronBlock extends BlockCauldron implements ITileEntityProvid
         this.setBlockName(Cauldronpp.MODID + ".cauldron");
         this.setCreativeTab(CreativeTabs.tabBrewing);
         this.setTickRandomly(true);
+        this.renderId = Suppliers.memoize(() -> Block.getIdFromBlock(this));
     }
 
     //根据metadata计算光照
@@ -61,7 +66,7 @@ public class CppCauldronBlock extends BlockCauldron implements ITileEntityProvid
     //渲染
     @Override
     public int getRenderType() {
-        return Block.getIdFromBlock(this);
+        return this.renderId.get();
     }
     @Override
     public boolean renderAsNormalBlock() {
@@ -96,8 +101,7 @@ public class CppCauldronBlock extends BlockCauldron implements ITileEntityProvid
 
     //右键交互
     @Override
-    public boolean onBlockActivated(World world, int x, int y, int z, EntityPlayer player, int side, float subX,
-        float subY, float subZ) {
+    public boolean onBlockActivated(World world, int x, int y, int z, EntityPlayer player, int side, float subX, float subY, float subZ) {
         if (world.isRemote) {
             world.markAndNotifyBlock(x, y, z, world.getChunkFromBlockCoords(x, z), this, this, 2);
             return true;

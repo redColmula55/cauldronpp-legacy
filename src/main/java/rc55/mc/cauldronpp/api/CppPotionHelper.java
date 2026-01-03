@@ -1,11 +1,15 @@
 package rc55.mc.cauldronpp.api;
 
+import cpw.mods.fml.common.FMLCommonHandler;
+import cpw.mods.fml.relauncher.Side;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
+import rc55.mc.cauldronpp.CauldronppConfig;
 import rc55.mc.cauldronpp.item.CauldronppItems;
+import rc55.mc.cauldronpp.mixin.early.PotionAccessor;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -18,7 +22,7 @@ public final class CppPotionHelper {
     private CppPotionHelper() {}
 
     //酿造材料（地狱疣单独计算）
-    private static Map<Item, String> brewingMaterial = new HashMap<>();
+    private static final Map<Item, String> brewingMaterial = new HashMap<>();
 
     public static Map<Item, String> getBrewingMaterial() {
         return brewingMaterial;
@@ -40,12 +44,15 @@ public final class CppPotionHelper {
     public static final Map<Item, Byte> brewingMaterialType = Utils.makeMap(map -> {
         map.put(Items.speckled_melon, DEFAULT_TYPE);
         map.put(Items.gunpowder, SPLASH_TYPE);
+        if (CauldronppConfig.enableLingeringPotion) {
+            map.put(CauldronppItems.LINGERING_POTION_FERTILIZER, LINGERING_TYPE);
+        }
     });
 
     //特别鸣谢 wwwweeeeee团队及retromcp项目 解析b1.9-pre2酿造逻辑
     //special thanks to wwwweeeeee team and the retromcp project
-    private static Map<Potion, String> potionRequirements = new HashMap<>();// 出现特定效果需要满足的条件
-    private static Map<Potion, String> potionAmplifiers = new HashMap<>();// 提升效果等级的条件
+    private static final Map<Potion, String> potionRequirements = new HashMap<>();//出现特定效果需要满足的条件
+    private static final Map<Potion, String> potionAmplifiers = new HashMap<>();//提升效果等级的条件
 
     public static Map<Potion, String> getPotionRequirements() {
         return potionRequirements;
@@ -68,14 +75,14 @@ public final class CppPotionHelper {
     }
 
     //二进制数相关计算
-    private static int getNumberInBinary(int index, int i1, int i2, int i3, int i4, int i5) {// 返回二进制数index的i1~i5位组成的二进制数
+    private static int getNumberInBinary(int index, int i1, int i2, int i3, int i4, int i5) {//返回二进制数index的i1~i5位组成的二进制数
         return (checkFlag(index, i1) ? 16 : 0) | (checkFlag(index, i2) ? 8 : 0)
             | (checkFlag(index, i3) ? 4 : 0)
             | (checkFlag(index, i4) ? 2 : 0)
             | (checkFlag(index, i5) ? 1 : 0);
     }
 
-    private static boolean checkFlag(int i0, int i1) {// 二进制数i0的i1位是否为1
+    private static boolean checkFlag(int i0, int i1) {//二进制数i0的i1位是否为1
         return (i0 & 1 << i1) != 0;
     }
 
@@ -313,8 +320,7 @@ public final class CppPotionHelper {
         }
     }
 
-    private static int updateEffectWeigh(boolean z0, boolean z1, boolean z2, int operation, int flagCount, int i5,
-        int potionData) {
+    private static int updateEffectWeigh(boolean z0, boolean z1, boolean z2, int operation, int flagCount, int i5, int potionData) {
         int i7 = 0;
         if (z0) {// !
             i7 = isFlagNotSet(potionData, flagCount);
@@ -430,7 +436,7 @@ public final class CppPotionHelper {
                             duration = 1;
                         } else {
                             duration = 1200 * (duration * 3 + (duration - 1) * 2);
-                            if (effect.isBadEffect()) {//减少有害效果时常
+                            if (isBadEffect(effect)) {//减少有害效果时长
                                 duration >>= 1;
                             }
                         }
@@ -444,7 +450,7 @@ public final class CppPotionHelper {
         return effects;
     }
 
-    // 药水名字
+    //药水名字
     private static final String[] potionPrefixTranslationKeys = new String[] { "potion.prefix.mundane",
         "potion.prefix.uninteresting", "potion.prefix.bland", "potion.prefix.clear", "potion.prefix.milky",
         "potion.prefix.diffuse", "potion.prefix.artless", "potion.prefix.thin", "potion.prefix.awkward",
@@ -458,7 +464,8 @@ public final class CppPotionHelper {
     static {
         //原版
         //不同效果的需求 感谢wwwweeeeee团队 解读此部分逻辑
-        //数字为位数 +为某位是否为1 -为某位是否为0 !为为1的位数不为多少 >=<为为1的位数大于/等于/小于多少 |为或者(满足一个条件即可) &为并且(所有条件均需要满足) *暂时不明
+        //数字为位数 +为某位是否为1 -为某位是否为0 !为为1的位数不为多少 >=<为为1的位数大于/等于/小于多少 |为或者(满足一个条件即可) &为并且(所有条件均需要满足)
+        //*为为其前面的条件施加倍数（e.g. 5*2代表第五位为1时应用2级效果/持续时间翻倍）
         //逻辑优先计算或（|） 其次为与（&）
         potionRequirements.put(Potion.moveSpeed, "!10 & !4 & 5*2+0 & >1 | !7 & !4 & 5*2+0 & >1");
         potionRequirements.put(Potion.moveSlowdown, "10 & 7 & !4 & 7+5+1-0");
@@ -498,9 +505,9 @@ public final class CppPotionHelper {
         //新增
         //效果
         potionRequirements.put(Potion.wither, "=6>7 & +14+2");
-        potionRequirements.put(Potion.field_76434_w, "6+8 & !3-9 & =10>14");// 生命提升
-        potionRequirements.put(Potion.field_76444_x, "=1>4 & !5!3 | 2*4+5<13");// 伤害吸收
-        potionRequirements.put(Potion.field_76443_y, "=0=5=7=8");// 饱和
+        potionRequirements.put(Potion.field_76434_w, "6+8 & !3-9 & =10>14");//生命提升
+        potionRequirements.put(Potion.field_76444_x, "=1>4 & !5!3 | 2*4+5<13");//伤害吸收
+        potionRequirements.put(Potion.field_76443_y, "=0=5=7=8");//饱和
         //提升效果等级的需求
         potionAmplifiers.put(Potion.wither, "6-5 & !1 & =8");
         potionAmplifiers.put(Potion.field_76434_w, "!5 & !3 & =11");
@@ -516,14 +523,13 @@ public final class CppPotionHelper {
 
     //返回对应药水的物品堆
     public static ItemStack getPotionItem(byte potionType, int potionData, int amount) {
-        if (potionData == 0 && potionType == 0) return new ItemStack(CauldronppItems.WATER_BOTTLE);
-        ItemStack stack;
-        if (potionType == SPLASH_TYPE) {
-            stack = new ItemStack(CauldronppItems.CPP_SPLASH_POTION, amount, potionData);
-        } else {
-            stack = new ItemStack(CauldronppItems.CPP_POTION, amount, potionData);
+        if (potionData == 0 && potionType == 0) return new ItemStack(CauldronppItems.WATER_BOTTLE, amount);
+        switch (potionType) {
+            case SPLASH_TYPE: return new ItemStack(CauldronppItems.CPP_SPLASH_POTION, amount, potionData);
+            case LINGERING_TYPE: return CauldronppConfig.enableLingeringPotion ? new ItemStack(CauldronppItems.CPP_LINGERING_POTION, amount, potionData) : Utils.EMPTY_STACK;
+            case ARROW_TYPE: return CauldronppConfig.enableTippedArrow ? new ItemStack(CauldronppItems.CPP_TIPPED_ARROW, amount, potionData) : Utils.EMPTY_STACK;
+            default: return new ItemStack(CauldronppItems.CPP_POTION, amount, potionData);
         }
-        return stack;
     }
 
     public static ItemStack getPotionItem(byte potionType, int potionData) {
@@ -534,5 +540,15 @@ public final class CppPotionHelper {
     public static boolean isWaterBottle(ItemStack stack) {
         return stack != null && ((stack.getItem() == CauldronppItems.WATER_BOTTLE)
             || ((stack.getItem() == Items.potionitem) && stack.getItemDamage() == 0));
+    }
+
+    public static boolean isBadEffect(Potion effect) {
+        if (FMLCommonHandler.instance().getSide() == Side.CLIENT) {
+            return effect.isBadEffect();
+        } else {
+            //服务端缺少isBadEffect()方法，必须使用accessor获取private字段值
+            //诶我草这个forge怎么这么坏.jpg
+            return ((PotionAccessor)effect).getIsBadEffect();
+        }
     }
 }

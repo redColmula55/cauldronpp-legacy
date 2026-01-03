@@ -4,6 +4,7 @@ import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemPotion;
 import net.minecraft.item.ItemStack;
@@ -21,6 +22,7 @@ public class WaterBottleItem extends ItemPotion {
         this.setCreativeTab(CreativeTabs.tabBrewing);
         this.setTextureName("potion");
         this.setUnlocalizedName(Cauldronpp.MODID + ".water_bottle");
+        this.setContainerItem(Items.glass_bottle);
     }
 
     @Override
@@ -40,10 +42,10 @@ public class WaterBottleItem extends ItemPotion {
 
     @Override
     @SideOnly(Side.CLIENT)
-    public void addInformation(ItemStack stack, EntityPlayer player, List infoList, boolean p_77624_4_) {}
+    public void addInformation(ItemStack stack, EntityPlayer player, List<String> infoList, boolean bl) {}
 
     @Override
-    public void getSubItems(Item item, CreativeTabs tab, List items) {
+    public void getSubItems(Item item, CreativeTabs tab, List<ItemStack> items) {
         if (this.getCreativeTab() == tab) items.add(new ItemStack(item));
     }
 }

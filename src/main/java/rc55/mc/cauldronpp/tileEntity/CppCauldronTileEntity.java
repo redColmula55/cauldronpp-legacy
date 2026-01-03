@@ -76,7 +76,7 @@ public class CppCauldronTileEntity extends TileEntity {
     public int getFluidRenderColor() {
         switch (this.liquidType) {
             case WATER:
-                return 0x3F76E4;//Blocks.water.colorMultiplier(this.worldObj, this.xCoord, this.yCoord, this.zCoord);
+                return 0x08318C;
             case POTION:
                 return CppPotionHelper.getPotionColor(this.liquidData);
             case COLORED_WATER:

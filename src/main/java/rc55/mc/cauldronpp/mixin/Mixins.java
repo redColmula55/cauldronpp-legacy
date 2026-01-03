@@ -5,11 +5,12 @@ import com.gtnewhorizon.gtnhmixins.builders.MixinBuilder;
 
 import javax.annotation.Nonnull;
 
+@SuppressWarnings("unused")
 public enum Mixins implements IMixins {
     EARLY(new MixinBuilder("Cauldron++ Early Mixin")
         .setPhase(Phase.EARLY)
         .setApplyIf(() -> true)
-        .addCommonMixins("EntityPotionMixin", "ItemAccessor", "ItemGlassBottleMixin"));
+        .addCommonMixins("ItemAccessor", "ItemGlassBottleMixin", "PotionAccessor"));
 
     private final MixinBuilder builder;
 

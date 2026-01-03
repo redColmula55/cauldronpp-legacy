@@ -8,6 +8,7 @@ import net.minecraft.item.ItemArmor;
 import net.minecraft.item.ItemDye;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
+import rc55.mc.cauldronpp.CauldronppConfig;
 import rc55.mc.cauldronpp.item.CauldronppItems;
 import rc55.mc.cauldronpp.tileEntity.CppCauldronTileEntity;
 
@@ -83,7 +84,7 @@ public interface CppCauldronBehavior {
     CppCauldronBehavior bottleBehavior = (world, x, y, z, meta, cauldron, player, stack) -> {
         if (!cauldron.isEmpty() && !cauldron.canBrew()) return false;
         if (stack.getItem() == Items.glass_bottle) {
-            if (!cauldron.canDecrease(BOTTLE_AMOUNT)) return false;
+            if (!cauldron.canDecrease(BOTTLE_AMOUNT) || cauldron.getPotionType() == CppPotionHelper.ARROW_TYPE) return false;
             ItemStack itemStack;
             if (cauldron.isWater()) {
                 itemStack = new ItemStack(CauldronppItems.WATER_BOTTLE);
@@ -162,6 +163,19 @@ public interface CppCauldronBehavior {
                     cauldron.setLiquidData(getDyedColor(cauldron.getLiquidData(), dyeColor));
                 } else return false;
                 if (!player.capabilities.isCreativeMode) stack.stackSize--;
+            } else return false;
+            update(world, x, y, z, meta, cauldron);
+            return true;
+        });
+
+        //药箭
+        map.put(Items.arrow, (world, x, y, z, meta, cauldron, player, stack) -> {
+            if (!CauldronppConfig.enableTippedArrow) return false;
+            if (cauldron.getLiquidType() == CppCauldronLiquidType.POTION && cauldron.canDecrease(BOTTLE_AMOUNT)) {
+                if (stack.stackSize < 16) return false;
+                Utils.addStackToPlayerInv(world, player, CppPotionHelper.getPotionItem(CppPotionHelper.ARROW_TYPE, cauldron.getLiquidData(), 16));
+                cauldron.decrease(BOTTLE_AMOUNT);
+                if (!player.capabilities.isCreativeMode) stack.stackSize -= 16;
             } else return false;
             update(world, x, y, z, meta, cauldron);
             return true;

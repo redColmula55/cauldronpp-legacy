@@ -8,7 +8,7 @@ import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.ai.attributes.AttributeModifier;
 import net.minecraft.entity.ai.attributes.IAttribute;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.projectile.EntityPotion;
+import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemPotion;
 import net.minecraft.item.ItemStack;
@@ -18,29 +18,43 @@ import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.IIcon;
 import net.minecraft.util.StatCollector;
 import net.minecraft.world.World;
+import rc55.mc.cauldronpp.Cauldronpp;
+import rc55.mc.cauldronpp.CauldronppConfig;
 import rc55.mc.cauldronpp.api.CppPotionHelper;
+import rc55.mc.cauldronpp.entity.CppPotionEntity;
 
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
 public class CppPotionItem extends ItemPotion {
 
-    private final boolean splash;
+    private final byte potionType;
     private IIcon icon;
-    private IIcon overlayIcon;
 
-    public CppPotionItem(boolean splash) {
-        this.splash = splash;
+    public CppPotionItem(byte type) {
+        this.potionType = type;
         this.setMaxStackSize(64);
         this.setHasSubtypes(true);
         this.setTextureName("potion");
         this.setCreativeTab(CreativeTabs.tabBrewing);
         this.setUnlocalizedName("potion");
+        this.setContainerItem(Items.glass_bottle);
     }
 
+    /// @deprecated 被 {@link CppPotionItem#getType} 及 {@link CppPotionItem#isThrowable} 取代
+    @Deprecated
     public boolean isSplash() {
-        return this.splash;
+        return this.potionType == CppPotionHelper.SPLASH_TYPE;
+    }
+
+    /// 类型
+    public byte getType() {
+        return this.potionType;
+    }
+
+    /// 是否可以右键扔出
+    public boolean isThrowable() {
+        return this.potionType == CppPotionHelper.SPLASH_TYPE || this.potionType == CppPotionHelper.LINGERING_TYPE;
     }
 
     @Override
@@ -56,8 +70,17 @@ public class CppPotionItem extends ItemPotion {
     @Override
     public void registerIcons(IIconRegister register) {
         super.registerIcons(register);
-        this.icon = register.registerIcon(this.getIconString() + "_" + (this.splash ? "bottle_splash" : "bottle_drinkable"));
-        this.overlayIcon = register.registerIcon(this.getIconString() + "_" + "overlay");
+        switch (potionType) {
+            case CppPotionHelper.DEFAULT_TYPE:
+                this.icon = register.registerIcon(this.getIconString() + "_bottle_drinkable");
+                break;
+            case CppPotionHelper.SPLASH_TYPE:
+                this.icon = register.registerIcon(this.getIconString() + "_bottle_splash");
+                break;
+            case CppPotionHelper.LINGERING_TYPE:
+                this.icon = register.registerIcon(Cauldronpp.MODID + ":lingering_potion");
+                break;
+        }
     }
 
     @Override
@@ -73,41 +96,48 @@ public class CppPotionItem extends ItemPotion {
     @Override
     public String getItemStackDisplayName(ItemStack stack) {
         int potionData = stack.getItemDamage();
-        return StatCollector.translateToLocalFormatted(this.splash ? "item.cauldronpp.splash_potion" : "item.cauldronpp.potion",
+        String translation;
+        switch (this.potionType) {
+            case CppPotionHelper.SPLASH_TYPE:
+                translation = "item.cauldronpp.splash_potion";
+                break;
+            case CppPotionHelper.LINGERING_TYPE:
+                translation = "item.cauldronpp.lingering_potion";
+                break;
+            default:
+                translation = "item.cauldronpp.potion";
+        }
+        return StatCollector.translateToLocalFormatted(translation,
             StatCollector.translateToLocal(CppPotionHelper.getPotionPrefixTranslationKey(potionData)));
     }
 
     @Override
     @SideOnly(Side.CLIENT)
-    public void addInformation(ItemStack stack, EntityPlayer player, List infoList, boolean p_77624_4_) {
-        List<PotionEffect> list1 = this.getEffects(stack);
-        HashMultimap hashmultimap = HashMultimap.create();
-        Iterator iterator1;
+    public void addInformation(ItemStack stack, EntityPlayer player, List<String> infoList, boolean bl) {
+        List<PotionEffect> effects = this.getEffects(stack);
+        HashMultimap<String, AttributeModifier> attributeModifierToNameMap = HashMultimap.create();
 
-        if (list1 != null && !list1.isEmpty()) {
-            iterator1 = list1.iterator();
+        if (effects != null && !effects.isEmpty()) {
+            for (PotionEffect effect : effects) {
+                String s1 = StatCollector.translateToLocal(effect.getEffectName()).trim();
+                Potion potion = Potion.potionTypes[effect.getPotionID()];
+                Map<IAttribute, AttributeModifier> map = potion.func_111186_k();
 
-            while (iterator1.hasNext()) {
-                PotionEffect potioneffect = (PotionEffect) iterator1.next();
-                String s1 = StatCollector.translateToLocal(potioneffect.getEffectName()).trim();
-                Potion potion = Potion.potionTypes[potioneffect.getPotionID()];
-                Map map = potion.func_111186_k();
-
-                if (map != null && map.size() > 0) {
-                    for (Object o : map.entrySet()) {
-                        Map.Entry entry = (Map.Entry) o;
-                        AttributeModifier attributemodifier = (AttributeModifier) entry.getValue();
-                        AttributeModifier attributemodifier1 = new AttributeModifier(attributemodifier.getName(), potion.func_111183_a(potioneffect.getAmplifier(), attributemodifier), attributemodifier.getOperation());
-                        hashmultimap.put(((IAttribute) entry.getKey()).getAttributeUnlocalizedName(), attributemodifier1);
+                if (map != null && !map.isEmpty()) {
+                    for (Map.Entry<IAttribute, AttributeModifier> entry : map.entrySet()) {
+                        AttributeModifier attributeModifier = entry.getValue();
+                        AttributeModifier newAttributeModifier = new AttributeModifier(attributeModifier.getName(),
+                            potion.func_111183_a(effect.getAmplifier(), attributeModifier), attributeModifier.getOperation());
+                        attributeModifierToNameMap.put(entry.getKey().getAttributeUnlocalizedName(), newAttributeModifier);
                     }
                 }
 
-                if (potioneffect.getAmplifier() > 0) {
-                    s1 = s1 + " " + StatCollector.translateToLocal("potion.potency." + potioneffect.getAmplifier()).trim();
+                if (effect.getAmplifier() > 0) {
+                    s1 = s1 + " " + StatCollector.translateToLocal("potion.potency." + effect.getAmplifier()).trim();
                 }
 
-                if (potioneffect.getDuration() > 20) {
-                    s1 = s1 + " (" + Potion.getDurationString(potioneffect) + ")";
+                if (effect.getDuration() > 20) {
+                    s1 = s1 + " (" + Potion.getDurationString(effect) + ")";
                 }
 
                 if (potion.isBadEffect()) {
@@ -121,59 +151,69 @@ public class CppPotionItem extends ItemPotion {
             infoList.add(EnumChatFormatting.GRAY + s);
         }
 
-        if (!hashmultimap.isEmpty()) {
+        if (!attributeModifierToNameMap.isEmpty()) {
             infoList.add("");
-            infoList.add(EnumChatFormatting.DARK_PURPLE + StatCollector.translateToLocal("potion.effects.whenDrank"));
-            iterator1 = hashmultimap.entries().iterator();
+            infoList.add(EnumChatFormatting.DARK_PURPLE + StatCollector.translateToLocal(this.isThrowable() ?
+                "item.cauldronpp.potion.description.when_use" : "potion.effects.whenDrank"));
 
-            while (iterator1.hasNext()) {
-                Map.Entry entry1 = (Map.Entry) iterator1.next();
-                AttributeModifier attributemodifier2 = (AttributeModifier) entry1.getValue();
-                double d0 = attributemodifier2.getAmount();
+            for (Map.Entry<String, AttributeModifier> entry : attributeModifierToNameMap.entries()) {
+                AttributeModifier attributeModifier = entry.getValue();
+                double d0 = attributeModifier.getAmount();
                 double d1;
 
-                if (attributemodifier2.getOperation() != 1 && attributemodifier2.getOperation() != 2) {
-                    d1 = attributemodifier2.getAmount();
+                if (attributeModifier.getOperation() != 1 && attributeModifier.getOperation() != 2) {
+                    d1 = attributeModifier.getAmount();
                 } else {
-                    d1 = attributemodifier2.getAmount() * 100.0D;
+                    d1 = attributeModifier.getAmount() * 100.0D;
                 }
 
                 if (d0 > 0.0D) {
-                    infoList.add(
-                        EnumChatFormatting.BLUE + StatCollector.translateToLocalFormatted("attribute.modifier.plus." + attributemodifier2.getOperation(), new Object[]{ItemStack.field_111284_a.format(d1), StatCollector.translateToLocal("attribute.name." + (String) entry1.getKey())}));
+                    infoList.add(EnumChatFormatting.BLUE + StatCollector.translateToLocalFormatted("attribute.modifier.plus." + attributeModifier.getOperation(),
+                        new Object[]{ItemStack.field_111284_a.format(d1), StatCollector.translateToLocal("attribute.name." + entry.getKey())}));
                 } else if (d0 < 0.0D) {
                     d1 *= -1.0D;
-                    infoList.add(EnumChatFormatting.RED + StatCollector.translateToLocalFormatted("attribute.modifier.take." + attributemodifier2.getOperation(), new Object[]{ItemStack.field_111284_a.format(d1), StatCollector.translateToLocal("attribute.name." + (String) entry1.getKey())}));
+                    infoList.add(EnumChatFormatting.RED + StatCollector.translateToLocalFormatted("attribute.modifier.take." + attributeModifier.getOperation(),
+                        new Object[]{ItemStack.field_111284_a.format(d1), StatCollector.translateToLocal("attribute.name." + entry.getKey())}));
                 }
             }
         }
     }
 
     @Override
-    public ItemStack onItemRightClick(ItemStack itemStackIn, World worldIn, EntityPlayer player) {
-        if (this.splash) {
-            if (!player.capabilities.isCreativeMode) {
-                --itemStackIn.stackSize;
-            }
-
-            worldIn.playSoundAtEntity(player, "random.bow", 0.5F, 0.4F / (itemRand.nextFloat() * 0.4F + 0.8F));
-
-            if (!worldIn.isRemote) {
-                worldIn.spawnEntityInWorld(new EntityPotion(worldIn, player, itemStackIn));
-            }
-        } else {
-            player.setItemInUse(itemStackIn, this.getMaxItemUseDuration(itemStackIn));
+    public boolean isEffectInstant(int damage) {
+        List<PotionEffect> effects = CppPotionHelper.getEffects(damage);
+        for (PotionEffect effect : effects) {
+            if (!Potion.potionTypes[effect.getPotionID()].isInstant()) return false;
         }
-        return itemStackIn;
+        return !effects.isEmpty();
     }
 
     @Override
-    public void getSubItems(Item item, CreativeTabs tab, List items) {
+    public ItemStack onItemRightClick(ItemStack stack, World world, EntityPlayer player) {
+        if (this.isThrowable()) {
+            if (!player.capabilities.isCreativeMode) {
+                stack.stackSize--;
+            }
+
+            world.playSoundAtEntity(player, "random.bow", 0.5f, 0.4f / (itemRand.nextFloat() * 0.4f + 0.8f));
+
+            if (!world.isRemote) {
+                world.spawnEntityInWorld(new CppPotionEntity(world, player, stack));
+            }
+        } else {
+            player.setItemInUse(stack, this.getMaxItemUseDuration(stack));
+        }
+        return stack;
+    }
+
+    @Override
+    public void getSubItems(Item item, CreativeTabs tab, List<ItemStack> items) {
         if (tab == this.getCreativeTab()) {
+            if (CauldronppItems.CPP_LINGERING_POTION.equals(item) && !CauldronppConfig.enableLingeringPotion) return;
             items.add(new ItemStack(item, 1, 32767));
             items.add(new ItemStack(item, 1, 16123));
-            items.add(new ItemStack(item, 1, 81621));
-            items.add(new ItemStack(item, 1, 55577));
+            items.add(new ItemStack(item, 1, 16085));
+            items.add(new ItemStack(item, 1, 22809));
         }
     }
 }

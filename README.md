@@ -1,4 +1,4 @@
-<h1>Cauldron++</h1>
+# Cauldron++
 
 English | [简体中文](README_zh.md)
 
@@ -9,14 +9,18 @@ This repository is an official port of Cauldron++ to 1.7.10.
 * If you find any bug, please report it in the issues page. Please describe how the bug was triggered and what it affects so that we can patch it as fast as possible. We accept Chinese / English issues.
 <hr>
 
+### Requirements
+
 * Minecraft version: 1.7.10 <br>
-* Needs UniMixins installed
+* Required dependencies: UniMixins
 <hr>
 
-<h3>⚠️Known issues⚠️</h3>
+### Known issues
 
 * Not compatible with the original CodeChickenCore mod.(Not an issue of Cauldron++, incompatible due to UniMixins)<br>
   Solution: Replace CodeChickenCore and NEI with the GTNH fork.
 <hr>
 
-This project is licensed under [GPL-3.0](LICENSE) & [CC-BY-NC-SA-4.0](LICENSE.TXT).<br>
+### License
+
+This project is licensed under [GPL-3.0](LICENSE_GPL) & [CC-BY-NC-SA-4.0](LICENSE_CC).<br>
